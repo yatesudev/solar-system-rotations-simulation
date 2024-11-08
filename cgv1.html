@@ -1,145 +1,205 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
 	<meta charset="utf-8">
-    <title>CGV-Aufgabe 1</title>
-    <script src="babylon.js"></script>
+	<title>CGV-Aufgabe 1</title>
+	<script src="babylon.js"></script>
 	<style type="text/css">
-        html,body,canvas {
-            width:100%;
-            height:100%;
-            padding:0;
-            margin:0;
-            overflow:hidden;
-        }
-    </style>
+		html,
+		body,
+		canvas {
+			width: 100%;
+			height: 100%;
+			padding: 0;
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
 </head>
+
 <body>
-    <canvas id="renderCanvas"></canvas>
+	<input type="number" id="orbitDuration" placeholder="Umlaufdauer in Minuten" value="1.0" step="0.01" style="position: absolute; top: 10px; left: 10px; z-index: 1;">
+
+	<canvas id="renderCanvas"></canvas>
 	<script>
-    // Check support
-    if (!BABYLON.Engine.isSupported()) {
-        window.alert('Browser not supported');
-    } else {
-		var canvas = document.getElementById("renderCanvas");
-		var engine = new BABYLON.Engine(canvas, true);
-		
-		var scene = new BABYLON.Scene(engine);
+		// Check support
+		if (!BABYLON.Engine.isSupported()) {
+			window.alert('Browser not supported');
+		} else {
 
-		// Reguläre Kamera mit festem Blickpunkt
-        var camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", -Math.PI/4.0, 0.25*Math.PI, 4.0, new BABYLON.Vector3(0, 0, 0), scene);
-		
-		var earth = BABYLON.Mesh.CreateSphere("Earth", 30.0, 0.3, scene);	
-		var moon = BABYLON.Mesh.CreateSphere("Moon", 20.0, 0.15, scene);
-		var sun = BABYLON.Mesh.CreateSphere("Sun", 10.0, 0.1, scene);
-				
-		var material1 = new BABYLON.StandardMaterial("default1", scene);
-		material1.diffuseTexture = new BABYLON.Texture("assets/earth.jpg", scene);
-		material1.specularColor = new BABYLON.Color3(0.1,0.1,0.1);
-		material1.emissiveColor = new BABYLON.Color3(0.2,0.2,0.2);
-		material1.diffuseTexture.vScale = -1;
-		material1.diffuseTexture.uScale = -1;
-		
-		var material2 = new BABYLON.StandardMaterial("default2", scene);
-		material2.diffuseTexture = new BABYLON.Texture("assets/moon.jpg", scene);
-		material2.specularColor = new BABYLON.Color3(0,0,0);
-		material2.emissiveColor = new BABYLON.Color3(0.2,0.2,0.2);
-		material2.diffuseTexture.vScale = -1;
-		material2.diffuseTexture.uScale = -1;
+			var canvas = document.getElementById("renderCanvas");
+			var engine = new BABYLON.Engine(canvas, true);
 
-		var material3 = new BABYLON.StandardMaterial("default3", scene);
-		material3.diffuseTexture = new BABYLON.Texture("assets/sun.jpg", scene);
-		material3.specularColor = new BABYLON.Color3(0,0,0);
-		material3.emissiveColor = new BABYLON.Color3(1,1,1);
+			var scene = new BABYLON.Scene(engine);
 
-		earth.material = material1;
-		moon.material = material2;
-		sun.material = material3;
+			// Reguläre Kamera mit festem Blickpunkt
+			var camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", -Math.PI / 4.0, 0.25 * Math.PI, 4.0, new BABYLON.Vector3(0, 0, 0), scene);
 
-		// Show coordinate system, BabylonJS uses left-handed coordinates!
-		// x-axis: red, y-axis: yellow, z-axis: green
-		var cylinder1 = BABYLON.Mesh.CreateCylinder("cylinder1", 0.2, 0.01, 0.01, 4, scene);
-		var cylinder2 = BABYLON.Mesh.CreateCylinder("cylinder2", 0.2, 0.01, 0.01, 4, scene, false);
-		var cylinder3 = BABYLON.Mesh.CreateCylinder("cylinder3", 0.2, 0.01, 0.01, 4, scene, false);
-		var cmat1 = new BABYLON.StandardMaterial("cmat1", scene);
-		var cmat2 = new BABYLON.StandardMaterial("cmat2", scene);
-		var cmat3 = new BABYLON.StandardMaterial("cmat3", scene);
-		cmat1.emissiveColor = new BABYLON.Color3(1,0,0); // red
-		cmat2.emissiveColor = new BABYLON.Color3(1,1,0); // yellow
-		cmat3.emissiveColor = new BABYLON.Color3(0,1,0); // green
-		cylinder1.material = cmat1;
-		cylinder2.material = cmat2;
-		cylinder3.material = cmat3;
-		cylinder1.position.x = 0.1;
-		cylinder1.rotation.z = 0.5*Math.PI;
-		cylinder2.position.y = 0.1;
-		cylinder2.rotation.z = 0.0;
-		cylinder3.position.z = 0.1;
-		cylinder3.rotation.x = 0.5*Math.PI;		
-		
-		var light = new BABYLON.PointLight("dir01", new BABYLON.Vector3(-0.0, -0.0, 0.0), scene);
-		light.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
+			// Create Skybox
+			var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
+			var skyboxMaterial = new BABYLON.StandardMaterial("skyBoxMaterial", scene);
+			
+			// Set Skybox textures (you can use any set of six textures you want)
+			skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0); // Optional, but we set it to black for better lighting control
+			skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0); // No specular reflection
+			skyboxMaterial.backFaceCulling = false; // Make sure we see the inside of the box
 
-		scene.clearColor = new BABYLON.Color3(0.05,0.05,0.2);
+			// Applying the texture for the Skybox (use your own or use default space textures)
+			skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("assets/skybox/skybox", scene);
+			skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE; // Correct coordinates for Skybox
+			skybox.material = skyboxMaterial;
 
-		var d = new Date();
-		var startTime = d.getTime();
-		var lastTime  = startTime;
+			// Set initial position of skybox (it should be large enough to cover everything)
+			skybox.position = new BABYLON.Vector3(0, 0, 0);
 
-		var sim_year     = 1.0;                             // one simulated earth year in minutes
-		var sim_day      = sim_year / 365.24;               // one simulated earth day in minutes
-		var sim_month    = sim_year / (365.24 / 27.3);      // one simulated moon loop in minutes
+			var earth = BABYLON.Mesh.CreateSphere("Earth", 30.0, 0.3, scene);
+			var moon = BABYLON.Mesh.CreateSphere("Moon", 20.0, 0.15, scene);
+			var sun = BABYLON.Mesh.CreateSphere("Sun", 10.0, 0.1, scene);
+			var satellite = BABYLON.Mesh.CreateCylinder("Satellite", 0.03, 0.001, 0.09, 10, scene);
+			satellite.rotation.z = -0.4 * Math.PI;
 
-		var moon_local_pos = new BABYLON.Vector3(-1.0, 0, 0);
+			var material1 = new BABYLON.StandardMaterial("default1", scene);
+			material1.diffuseTexture = new BABYLON.Texture("assets/earth.jpg", scene);
+			material1.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+			material1.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+			material1.diffuseTexture.vScale = -1;
+			material1.diffuseTexture.uScale = -1;
 
-		// Set initial earth position
-		sun.position.x = 0.0;
-		sun.position.y = 0.0;
-		sun.position.z = 0.0;
+			var material2 = new BABYLON.StandardMaterial("default2", scene);
+			material2.diffuseTexture = new BABYLON.Texture("assets/moon.jpg", scene);
+			material2.specularColor = new BABYLON.Color3(0, 0, 0);
+			material2.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+			material2.diffuseTexture.vScale = -1;
+			material2.diffuseTexture.uScale = -1;
 
-		// Set initial earth position
-		earth.position.x = 1.0;
-		earth.position.y = 0.0;
-		earth.position.z = 0.0;
+			var material3 = new BABYLON.StandardMaterial("default3", scene);
+			material3.diffuseTexture = new BABYLON.Texture("assets/sun.jpg", scene);
+			material3.specularColor = new BABYLON.Color3(0, 0, 0);
+			material3.emissiveColor = new BABYLON.Color3(1, 1, 1);
 
-		// Set initial moon position
-		moon.position.x = earth.position.x - 0.5;
-		moon.position.y = earth.position.y;
-		moon.position.z = earth.position.z;		
+			var material4 = new BABYLON.StandardMaterial("default4", scene);
+			material4.diffuseTexture = new BABYLON.Texture("assets/metal.jpg", scene);
+			material4.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+			material4.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+			material4.diffuseTexture.vScale = -1;
+			material4.diffuseTexture.uScale = -1;
 
-		scene.registerBeforeRender ( () => {
-			var d 		  = new Date();
-			var time      = d.getTime();        // get milliseconds since 1970
-			var elapsed_t = time - startTime;   // milliseconds since start
-			var delta_t   = time - lastTime;    // milliseconds since last frame
-			lastTime      = time;
+			earth.material = material1;
+			moon.material = material2;
+			sun.material = material3;
+			satellite.material = material4;
 
-			var min2ms  = 1000.0 * 60.0;        // milliseconds in minutes
+			// Show coordinate system, BabylonJS uses left-handed coordinates!
+			// x-axis: red, y-axis: yellow, z-axis: green
+			var cylinder1 = BABYLON.Mesh.CreateCylinder("cylinder1", 0.2, 0.01, 0.01, 4, scene);
+			var cylinder2 = BABYLON.Mesh.CreateCylinder("cylinder2", 0.2, 0.01, 0.01, 4, scene, false);
+			var cylinder3 = BABYLON.Mesh.CreateCylinder("cylinder3", 0.2, 0.01, 0.01, 4, scene, false);
+			var cmat1 = new BABYLON.StandardMaterial("cmat1", scene);
+			var cmat2 = new BABYLON.StandardMaterial("cmat2", scene);
+			var cmat3 = new BABYLON.StandardMaterial("cmat3", scene);
+			cmat1.emissiveColor = new BABYLON.Color3(1, 0, 0); // red
+			cmat2.emissiveColor = new BABYLON.Color3(1, 1, 0); // yellow
+			cmat3.emissiveColor = new BABYLON.Color3(0, 1, 0); // green
+			cylinder1.material = cmat1;
+			cylinder2.material = cmat2;
+			cylinder3.material = cmat3;
+			cylinder1.position.x = 0.1;
+			cylinder1.rotation.z = 0.5 * Math.PI;
+			cylinder2.position.y = 0.1;
+			cylinder2.rotation.z = 0.0;
+			cylinder3.position.z = 0.1;
+			cylinder3.rotation.x = 0.5 * Math.PI;
 
-/*
-			// Earth position and rotation
-			earth.position.x = ...... ;
-			earth.position.z = ...... ;
+			var light = new BABYLON.PointLight("dir01", new BABYLON.Vector3(-0.0, -0.0, 0.0), scene);
+			light.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
 
-			earth.rotation.y = ......;
-*/
-			// Moon position and rotation
-			// ...
-		});
+			scene.clearColor = new BABYLON.Color3(0.05, 0.05, 0.2);
 
-        scene.activeCamera.attachControl(canvas);
-		engine.runRenderLoop( () => {
-			if (scene) {
-				scene.render();
-			}
-//			console.log(engine.getFps().toFixed() + " fps");
-		});
+			var d = new Date();
+			var startTime = d.getTime();
+			var lastTime = startTime;
 
-        // Resize
-        window.addEventListener("resize", function () {
-            engine.resize();
-        });
-	};
+			var sim_year = 1.0;                             // one simulated earth year in minutes
+			var sim_day = sim_year / 365.24;               // one simulated earth day in minutes
+			var sim_month = sim_year / (365.24 / 27.3);      // one simulated moon loop in minutes
+
+			// Update sim_year when input changes
+			document.getElementById("orbitDuration").addEventListener("change", function(event) {
+			    sim_year = parseFloat(event.target.value);
+				sim_day = sim_year / 365.24;
+				sim_month = sim_year / (365.24 / 27.3);
+			});
+
+			var moon_local_pos = new BABYLON.Vector3(-1.0, 0, 0);
+
+			// Set initial earth position
+			sun.position.x = 0.0;
+			sun.position.y = 0.0;
+			sun.position.z = 0.0;
+
+			// Set initial earth position
+			earth.position.x = 1.0;
+			earth.position.y = 0.0;
+			earth.position.z = 0.0;
+
+			// Set initial moon position
+			moon.position.x = earth.position.x - 0.5;
+			moon.position.y = earth.position.y;
+			moon.position.z = earth.position.z;
+
+			// Set initial satellite position
+			satellite.position.x = moon.position.x + 0.2;
+			satellite.position.y = moon.position.y;
+			satellite.position.z = moon.position.z;
+
+			scene.registerBeforeRender(() => {
+		    	var d = new Date();
+		    	var time = d.getTime();            // current time in milliseconds
+		    	var elapsed_t = time - startTime;  // milliseconds since start
+		    	lastTime = time;
+
+		    	var min2ms = 1000.0 * 60.0;        // milliseconds in a minute
+
+		    	// Calculate elapsed time in minutes
+		    	var simulated_time_in_minutes = elapsed_t / min2ms; // Convert from milliseconds to simulated minutes
+
+		    	// Calculate Earth’s position in orbit
+		    	earth.position.x = Math.cos((2 * Math.PI * simulated_time_in_minutes) / sim_year);
+		    	earth.position.z = Math.sin((2 * Math.PI * simulated_time_in_minutes) / sim_year);
+
+                earth.rotation.y = -(elapsed_t / ((min2ms / 365.24) * sim_year) * 2 * Math.PI);
+
+				// Calculate Moon's position in orbit around Earth (1 orbit per 27.3 days)
+				moon.position.x = earth.position.x + Math.cos((2 * Math.PI * simulated_time_in_minutes) / sim_month) * 0.5;
+				moon.position.z = earth.position.z + Math.sin((2 * Math.PI * simulated_time_in_minutes) / sim_month) * 0.5;
+
+				// Rotate Moon around its y-axis (1 rotation per 27.3 days to face Earth consistently)
+				moon.rotation.y = -(elapsed_t / ((min2ms / 27.3) * sim_year) * 2 * Math.PI);
+
+				// Update the satellite’s position (satellite orbits 3x faster than the Moon)
+				satellite.position.x = moon.position.x + Math.cos((2 * Math.PI * simulated_time_in_minutes) / (sim_month / 3)) * 0.2;
+				satellite.position.z = moon.position.z + Math.sin((2 * Math.PI * simulated_time_in_minutes) / (sim_month / 3)) * 0.2;
+
+				// Synchronize the satellite’s rotation to always face the Moon (same as Moon's rotation)
+				// The satellite's self-rotation matches the Moon’s rotation (but orbit is 3x faster)
+				satellite.rotation.y = -(elapsed_t / (min2ms * (sim_month / 3)) * 2 * Math.PI);
+
+			});
+			scene.activeCamera.attachControl(canvas);
+			engine.runRenderLoop(() => {
+				if (scene) {
+					scene.render();
+				}
+				//			console.log(engine.getFps().toFixed() + " fps");
+			});
+
+			// Resize
+			window.addEventListener("resize", function () {
+				engine.resize();
+			});
+		};
 	</script>
 </body>
+
 </html>
