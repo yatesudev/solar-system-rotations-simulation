@@ -21,6 +21,7 @@ window.onload = function() {
         var earth = createCosmicBody("Earth", 'planet', "assets/earth.jpg", 0.3, {x: 1.0, y: 0, z: 0}, scene);
         var moon = createCosmicBody("Moon", 'planet', "assets/moon.jpg", 0.15, {x: earth.position.x - 0.5, y: earth.position.y, z: earth.position.z}, scene);
         var satellite = createCosmicBody("Satellite", 'satellite', "assets/metal.jpg", 1.0, {x: moon.position.x + 0.2, y: moon.position.y, z: moon.position.z}, scene, true);
+        var mars = createCosmicBody("Mars", 'planet', "assets/mars.jpg", 0.6, {x: -1.5, y: 0, z: 0}, scene);
         
         var light = new BABYLON.PointLight("dir01", new BABYLON.Vector3(-0.0, -0.0, 0.0), scene);
         light.diffuse = new BABYLON.Color3(1.0, 1.0, 1.0);
@@ -57,6 +58,9 @@ window.onload = function() {
         
             // Calculate Satellite's position and rotation around the Moon (Satellite orbits the Moon)
             calculateMovement(satellite, {elapsed_t: elapsed_t, min2ms: min2ms}, (sim_month / 3), 0.2, 1, sim_year, moon); // Satellite's orbit around the Moon
+
+            // Calculate Mars' position and rotation (Mars orbits the Sun)
+            calculateMovement(mars, {elapsed_t: elapsed_t, min2ms: min2ms}, sim_year, 4.5, 150, sim_year); // Mars' orbit around the Sun
         });
         
                             
