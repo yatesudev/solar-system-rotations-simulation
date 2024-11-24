@@ -1,9 +1,6 @@
 # Solar System Rotations Simulation
 
 **Course**: Computer Graphics and Visualization (Computergrafik und Visualisierung)  
-**Instructor**: Prof. Dr.-Ing. Gordon Müller  
-**Semester**: Wintersemester 2024/25  
-**Project**: Aufgabe 1 - Rotationen im Sonnensystem
 
 ## Project Overview
 
