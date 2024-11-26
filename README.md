@@ -2,7 +2,7 @@
 
 **Course**: Computer Graphics and Visualization (Computergrafik und Visualisierung)  
 
-![Screenshot](screenshot.png)
+![Screenshot](Screenshot.png)
 
 ## Project Overview
 
