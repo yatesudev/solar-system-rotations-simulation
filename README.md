@@ -2,11 +2,11 @@
 
 **Course**: Computer Graphics and Visualization (Computergrafik und Visualisierung)  
 
-![Screenshot](Screenshot.png)
-
 ## Project Overview
 
 This project simulates the rotations and orbital movements of celestial bodies in the solar system using Babylon.js. The simulation includes the Earth's movement around the Sun, its self-rotation, the Moon's orbit around the Earth, and a satellite orbiting the Moon. It demonstrates the use of 3D transformations and animations to model realistic celestial mechanics.
+
+![Screenshot](Screenshot.png)
 
 ## Key Features:
 1. **Earth's Orbit Around the Sun**:
